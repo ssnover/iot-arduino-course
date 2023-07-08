@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 const uint8_t AHT20_I2C_ADDR(0x38);
-//const uint8_t AHT20_I2C_ADDR(0x38 << 1);
 const uint8_t CALIBRATE_CMD(0xe1);
 const uint8_t TRIGGER_CMD(0xac);
 
