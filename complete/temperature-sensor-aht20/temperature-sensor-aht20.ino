@@ -2,6 +2,14 @@
 #include "Wire.h"
 #include <stdint.h>
 
+/*
+ * This source code interacts with an AHT20 based on the process outlined in
+ * ASAIR's product manual for the AHT20, see this URL: 
+ *
+ * https://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf
+ */
+
+// Section 5.3
 const uint8_t AHT20_I2C_ADDR(0x38);
 const uint8_t CALIBRATE_CMD(0xe1);
 const uint8_t TRIGGER_CMD(0xac);
@@ -86,6 +94,7 @@ float request_temperature_data() {
         }
     }
 
+    // See Section 5.4
     uint32_t raw = ((uint32_t)(reading[3] & 0x0F) << 16);
     raw |= ((uint32_t)reading[4] << 8);
     raw |= reading[5];
@@ -94,6 +103,7 @@ float request_temperature_data() {
 }
 
 float calculate_temperature_from_raw(uint32_t raw_data) {
+    // See Section 6.2
     auto ratio = static_cast<float>(raw_data) / (1ul << 20);
     ratio *= 200.;
     ratio -= 50.;
