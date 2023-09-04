@@ -1,0 +1,6 @@
+[book]
+authors = ["Shane Snover"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Introduction to Internet of Things with Arduino and Python"
