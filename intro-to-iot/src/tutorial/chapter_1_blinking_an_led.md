@@ -33,8 +33,20 @@ Use the Verify (checkmark) to compile the C++ source code (make sure you've chos
 Plug in the board's USB cable to your computer and select the board's port via `Tools` -> `Port`. On Windows, it will be something like `COM1`. On Linux, it will be something like `/dev/ttyACM0`. On Mac, it will be something like `<TODO>`. Once the port is chosen, you can flash the board with Upload button (has an `->` in its icon).
 
 A successful Upload will have text like this in the Output window:
-```
-TODO
+```red
+avrdude: AVR device initialized and ready to accept instructions
+
+Reading | ################################################## | 100% 0.00s
+
+avrdude: Device signature = 0x1e950f (probably m328p)
+avrdude: reading input file "/tmp/arduino/sketches/E9A94DB52016B8DEAFA0AB134D40CC04/sketch_sep3a.ino.hex"
+avrdude: writing flash (882 bytes):
+
+Writing | ################################################## | 100% 0.14s
+
+avrdude: 882 bytes of flash written
+
+avrdude done.  Thank you.
 ```
 
 You should now see a blinking LED on your Arduino. Verify the period of the blinking matches what you expect with a watch or by counting. You can also change the `5000` to some other numbers and re-upload to verify that it updated.
