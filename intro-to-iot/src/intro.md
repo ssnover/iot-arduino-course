@@ -1,10 +1,19 @@
 # Introduction to Internet of Things
+*with Arduino and Python*
 
 ## About the Course
 
 This course is an introduction to developing networked embedded systems. It will walk you through writing a program to collect data from a sensor with an Arduino UNO, sending that data to a computer over a serial connection, and then logging that data into a database.
 
 By the end of this tutorial, you'll have a system collecting temperature data and reporting it to a database from which you can view historic plots of the data. This will give you a template from which you can record almost any type of data you could think of and get it into a saved format which can be easily analyzed later or for which actions can be triggered in real-time.
+
+### Notes On Using this Book Asynchronously
+
+I originally wrote and developed this for the purpose of instructing the content live with hardware provided and an instance of the database accessible over LAN. If you're interested in following along remotely, check out the appendix items for a list of hardware you'll need to purchase and a non-comprehensive guide to setting up InfluxDB with Docker.
+
+### This Book is a Living Document
+
+If you find a mistake, a broken link, or an opportunity to provide a better explanation, please file an issue on this course's [GitHub repository](https://github.com/ssnover/iot-arduino-course/issues)!
 
 ## Knowledge to Have Before the Course
 
