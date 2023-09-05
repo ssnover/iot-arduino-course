@@ -61,7 +61,7 @@ void init_aht20_sensor(uint8_t address) {
         Wire.write(&cmd_buffer[0], 3);
         Wire.endTransmission();
         
-        delay(SENSOR_CALIBRATION_DELAY)
+        delay(SENSOR_CALIBRATION_DELAY);
     }
 
     Serial.println("debug: sensor ready");
@@ -95,11 +95,11 @@ void setup() {
     }
 }
 
-void init_aht20_sensor() {
+void init_aht20_sensor(uint8_t address) {
     // --snip--
 }
 
-uint8_t get_status() {
+uint8_t get_status(uint8_t address) {
     // --snip--
 }
 ```
@@ -121,6 +121,10 @@ LED state: OFF
 With the initialization out of the way, let's read some data. The figure in the datasheet shows the contents and length of the data to be read back. This sensor measures both temperature and humidity so the measurement will contain both values. Out of the bytes returned the temperature data can be found in the 4th, 5th, and 6th byte and it has a size of 20 bits. The next size type up is a `uint32_t` so we'll plan to store it in that.
 
 ```cpp
+const uint8_t TRIGGER_CMD(0xac);
+
+// --snip--
+
 float request_temperature_data(uint8_t address) {
     // send a command
     const uint8_t cmd_buffer[3] = {TRIGGER_CMD, 0x33, 0x00};
@@ -131,7 +135,7 @@ float request_temperature_data(uint8_t address) {
     bool data_available = false;
     while (!data_available) {
         delay(10);
-        uint8_t status = get_status();
+        uint8_t status = get_status(address);
         if (!(status & (1u << 7))) {
             data_available = true;
         }
@@ -206,7 +210,7 @@ void setup() {
         digitalWrite(LED_PIN, led_state);
         led_state = !led_state;
 
-        float temperature = request_temperature_data();
+        float temperature = request_temperature_data(AHT20_I2C_ADDR);
         Serial.print("data: ");
         Serial.println(temperature);
         delay(5000);
@@ -219,7 +223,125 @@ I've removed the logging of the LED state as it's not very useful for our python
 That's it! If you run your python program or check the Serial Monitor, you should see temperature values being reported in the terminal!
 
 ```
-TODO
+info: booting
+debug: sensor ready
+info: initialized sensor
+data: 25.72
+data: 25.71
+data: 25.71
+data: 28.37
 ```
 
 In the next chapter we'll modify our python program to parse that data from a string in the format `"data: 19.4"` into a decimal number that can be plotted or have other analysis performed on it.
+
+Here's the completed Arduino program:
+
+```cpp
+#include "Wire.h"
+#include <stdint.h>
+
+const uint8_t AHT20_I2C_ADDR(0x38);
+const uint8_t GET_STATUS(0x71);
+const uint8_t CALIBRATE_CMD(0xbe);
+const uint8_t TRIGGER_CMD(0xac);
+const unsigned int SENSOR_INIT_DELAY(40);
+const unsigned int SENSOR_CALIBRATION_DELAY(10);
+
+void setup() {
+    // Initialization
+    const int LED_PIN = 13;
+    pinMode(LED_PIN, OUTPUT);
+    bool led_state = false;
+
+    Serial.begin(115200);
+    Serial.println();
+    Serial.println("info: booting");
+
+    Wire.begin();
+    init_aht20_sensor(AHT20_I2C_ADDR);
+    Serial.println("info: initialized sensor");
+
+    while (true) {
+        digitalWrite(LED_PIN, led_state);
+        led_state = !led_state;
+
+        float temperature = request_temperature_data(AHT20_I2C_ADDR);
+        Serial.print("data: ");
+        Serial.println(temperature);
+        delay(5000);
+    }
+}
+
+uint8_t get_status(uint8_t address) {
+    Wire.requestFrom(address, 1);
+    while (!Wire.available()) {
+        delay(1);
+    }
+    uint8_t status = Wire.read();
+    return status;
+}
+
+void init_aht20_sensor(uint8_t address) {
+    delay(SENSOR_INIT_DELAY);
+    
+    uint8_t status = get_status(address);
+    bool is_calibrated = status & (1u << 3);
+
+    if (!is_calibrated) {
+        const uint8_t cmd_buffer[3] = {CALIBRATE_CMD, 0x08, 0x00};
+        Serial.println("debug: calibrating sensor");
+
+        Wire.beginTransmission(address);
+        Wire.write(&cmd_buffer[0], 3);
+        Wire.endTransmission();
+        
+        delay(SENSOR_CALIBRATION_DELAY);
+    }
+
+    Serial.println("debug: sensor ready");
+}
+
+float request_temperature_data(uint8_t address) {
+    // send a command
+    const uint8_t cmd_buffer[3] = {TRIGGER_CMD, 0x33, 0x00};
+    Wire.beginTransmission(address);
+    Wire.write(&cmd_buffer[0], 3);
+    Wire.endTransmission();
+
+    bool data_available = false;
+    while (!data_available) {
+        delay(10);
+        uint8_t status = get_status(address);
+        if (!(status & (1u << 7))) {
+            data_available = true;
+        }
+    }
+
+    const uint8_t READING_BYTES = 7;
+    uint8_t reading[READING_BYTES] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    Wire.requestFrom(address, READING_BYTES);
+    for (auto bytes_read = 0u; bytes_read < READING_BYTES; ++bytes_read) {
+        if (Wire.available()) {
+            reading[bytes_read] = Wire.read();
+        } else {
+            delay(1);
+        }
+    }
+
+    uint32_t raw = ((uint32_t)(reading[3] & 0b00001111) << 16);
+    raw |= ((uint32_t)reading[4] << 8);
+    raw |= reading[5];
+    float temperature = calculate_temperature_from_raw(raw);
+    return temperature;
+}
+
+float calculate_temperature_from_raw(uint32_t raw_data) {
+    // See Section 6.2
+    auto ratio = static_cast<float>(raw_data) / (1ul << 20);
+    ratio *= 200.;
+    ratio -= 50.;
+    return ratio;
+}
+
+void loop() {}
+```

@@ -56,17 +56,21 @@ Here we're using the pyserial library to get a connection to a serial port speci
 
 Since the attempt to read a line from the serial port can timeout, we also have to handle the case where the function timed out and we didn't get any data. So we only print the data if we get some data.
 
-Make sure you've closed the Arduino IDE Serial Monitor, then give this program a try! You should see a very similar output to the serial monitor, you've basically reimplemented it in python! You can close the program with `Ctrl+C`.
+Make sure you've closed the Arduino IDE, then give this program a try! You should see a very similar output to the serial monitor, you've basically reimplemented it in python! You can close the program with `Ctrl+C`.
 
 ```
-info: booting
-LED state: OFF
-LED state: ON
-LED state: OFF
-LED state: ON
-LED state: OFF
-LED state: ON
+Connecting to serial port at /dev/ttyACM0
+b'\r\n'
+b'info: booting\r\n'
+b'LED state: OFF\r\n'
+b'LED state: ON\r\n'
+b'LED state: OFF\r\n'
+b'LED state: ON\r\n'
+b'LED state: OFF\r\n'
+b'LED state: ON\r\n'
 ```
+
+Obviously, it's got a bit more decoration than the Serial Monitor display. This is how python prints encoded byte data, essentially assuming that it is ASCII. In order to turn it into a regular string, we'll need to decode it and probably remove the newline characters (`\r\n`). To do that, change `print(next_line)` to `print(next_line.decode().rstrip())`.
 
 Before moving on, let's just quickly add some nicer handling for when `Ctrl+C` is pressed.
 
@@ -97,7 +101,7 @@ def main():
     while running:
         next_line = serial_port.readline()
         if next_line:
-            print(next_line)
+            print(next_line.decode().rstrip())
 
     print("Exiting...")
 
@@ -138,7 +142,7 @@ def main():
     while running:
         next_line = serial_port.readline()
         if next_line:
-            print(next_line)
+            print(next_line.decode().rstrip())
 
     print("Exiting...")
 
