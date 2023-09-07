@@ -9,8 +9,7 @@
 - [Reporting Data Over Serial](./tutorial/chapter_2_data_over_serial.md)
 - [Reading the Serial Port in Python](./tutorial/chapter_3_pyserial.md)
 - [Collecting Temperature Data](./tutorial/chapter_4_temp_data.md)
-- [Parsing Data Messages](./tutorial/chapter_5_parsing_data.md)
-- [Uploading Data to the Database](./tutorial/chapter_6_uploading_data.md)
+- [Uploading Data to the Database](./tutorial/chapter_5_uploading_data.md)
 
 ---
 
