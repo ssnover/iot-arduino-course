@@ -15,6 +15,7 @@ In our case, the Python program will connect to the MQTT broker and send data to
 We'll be using a third party library from Eclipse called `paho-mqtt` in order to publish data in our python program. It doesn't require much code to get started:
 
 ```py
+import json
 import paho.mqtt.client as mqtt
 import serial
 import signal
@@ -41,9 +42,9 @@ def main():
             print(next_line)
             if next_line.startswith("data: "):
                 try:
-                    temperature = float(line[6:].rstrip())
+                    temperature = float(next_line[6:].rstrip())
                     name = "ssnover"
-                    client.publish(f"{name}/temperature", str(temperature))
+                    client.publish(f"/temperature/{name}", json.dumps({"temperature": temperature}))
                 except ValueError:
                     print(f"error: Could not extract data from {next_line}")
 
