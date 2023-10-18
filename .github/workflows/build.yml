@@ -41,9 +41,8 @@ jobs:
           cd intro-to-iot
           mdbook build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-pages-artifact@v1
         with:
-          name: book
           path: intro-to-iot/book/
 
   deploy:
@@ -60,5 +59,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
-        with:
-          artifact_name: book
