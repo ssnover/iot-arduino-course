@@ -37,7 +37,9 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Build mdbook
-        run: mdbook build
+        run: |
+          cd intro-to-iot
+          mdbook build
 
       - uses: actions/upload-artifact@v3
         with:
