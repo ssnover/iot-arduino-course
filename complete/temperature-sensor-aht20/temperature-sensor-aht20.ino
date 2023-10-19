@@ -1,30 +1,19 @@
 #include "Arduino.h"
 #include "Wire.h"
+#include "AHT20.h"
 #include <stdint.h>
 
-/*
- * This source code interacts with an AHT20 based on the process outlined in
- * ASAIR's product manual for the AHT20, see this URL: 
- *
- * https://files.seeedstudio.com/wiki/Grove-AHT20_I2C_Industrial_Grade_Temperature_and_Humidity_Sensor/AHT20-datasheet-2020-4-16.pdf
- */
-
-// Section 5.3
 const uint8_t AHT20_I2C_ADDR(0x38);
-const uint8_t CALIBRATE_CMD(0x71);
-const uint8_t TRIGGER_CMD(0xac);
-
-bool init_aht20_sensor();
-uint8_t get_status();
-float request_temperature_data();
-float calculate_temperature_from_raw(uint32_t raw_data);
 
 void setup() {
     Serial.begin(115200);
     Serial.println();
     Serial.println("info: booting");
     Wire.begin();
-    bool initialized = init_aht20_sensor();
+
+    AHT20 aht20(AHT20_I2C_ADDR);
+
+    bool initialized = aht20.begin();
     if (!initialized) {
         Serial.println("error: could not initialize aht20");
     } else {
@@ -32,82 +21,14 @@ void setup() {
     }
 
     while (true) {
-        float temperature = request_temperature_data();
+        while (!aht20.available()) {
+          delay(10);
+        }
+        float temperature = aht20.getTemperature();
         Serial.print("data: ");
         Serial.println(temperature);
         delay(5000);
     }
-}
-
-bool init_aht20_sensor() {
-    const uint8_t cmd_buffer[3] = {CALIBRATE_CMD, 0x08, 0x00};
-    Serial.println("debug: writing calibrate cmd");
-    Wire.beginTransmission(AHT20_I2C_ADDR);
-    Wire.write(&cmd_buffer[0], 3);
-    Wire.endTransmission();
-
-    bool is_ready = false;
-    while (!is_ready) {
-        uint8_t status = get_status();
-        if (status & 0x08) {
-            is_ready = true;
-            Serial.println("debug: sensor ready");
-        }
-    }
-
-    return true;
-}
-
-uint8_t get_status() {
-    Wire.requestFrom(AHT20_I2C_ADDR, 1);
-    while (!Wire.available()) {
-        delay(1);
-    }
-    uint8_t status = Wire.read();
-    return status;
-}
-
-float request_temperature_data() {
-    // send a command
-    const uint8_t cmd_buffer[3] = {TRIGGER_CMD, 0x33, 0x00};
-    Wire.beginTransmission(AHT20_I2C_ADDR);
-    Wire.write(&cmd_buffer[0], 3);
-    Wire.endTransmission();
-
-    bool data_available = false;
-    while (!data_available) {
-        delay(10);
-        uint8_t status = get_status();
-        if (status & 0x80) {
-            data_available = true;
-        }
-    }
-
-    const uint8_t READING_BYTES = 6;
-    uint8_t reading[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    Wire.requestFrom(AHT20_I2C_ADDR, READING_BYTES);
-    for (auto bytes_read = 0u; bytes_read < READING_BYTES; ++bytes_read) {
-        if (Wire.available()) {
-            reading[bytes_read] = Wire.read();
-        } else {
-            delay(1);
-        }
-    }
-
-    // See Section 5.4
-    uint32_t raw = ((uint32_t)(reading[3] & 0x0F) << 16);
-    raw |= ((uint32_t)reading[4] << 8);
-    raw |= reading[5];
-    float temperature = calculate_temperature_from_raw(raw);
-    return temperature;
-}
-
-float calculate_temperature_from_raw(uint32_t raw_data) {
-    // See Section 6.2
-    auto ratio = static_cast<float>(raw_data) / (1ul << 20);
-    ratio *= 200.;
-    ratio -= 50.;
-    return ratio;
 }
 
 void loop() {}

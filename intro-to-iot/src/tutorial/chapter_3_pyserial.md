@@ -2,7 +2,11 @@
 
 In this chapter we'll be switching gears to write a host program in Python. Now that we've got serial data being emitted from the Arduino, we'll actually be able to read those bytes and manipulate them on the host side.
 
-Create a new directory for the project, like `data_reader`, and add a `main.py` file to it. Download or copy [this file](https://raw.githubusercontent.com/ssnover/iot-arduino-course/main/complete/mqtt-publisher/requirements.txt) showing the required packages we'll need for this program. You can then install them into your hosted python environment with `python3 -m pip install -r requirements.txt`.
+Create a new directory for the project, like `data_reader`, and add a `main.py` file to it. Download or copy [this file](https://raw.githubusercontent.com/ssnover/iot-arduino-course/main/complete/mqtt-publisher/requirements.txt) showing the required packages we'll need for this program. You can then install them into your hosted python environment with `python3 -m pip install -r requirements.txt` or with your IDE's Python package manager, here's the list of current required libraries:
+
+```
+{{#include ../../../complete/mqtt-publisher/requirements.txt }}
+```
 
 Inside `main.py`, we'll start off with a barebones python script:
 
