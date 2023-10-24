@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import json
 import paho.mqtt.client as mqtt
 import serial

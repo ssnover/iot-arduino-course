@@ -19,3 +19,4 @@
 
 [A1. Hardware Required](./appendix/hardware.md)
 [A2. Running InfluxDB](./appendix/influxdb.md)
+[A3. Advanced Topics](./appendix/advanced.md)
