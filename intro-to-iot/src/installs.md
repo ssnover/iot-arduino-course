@@ -13,6 +13,32 @@ Sketch uses 444 bytes (1%) of program storage space. Maximum is 32256 bytes.
 Global variables use 9 bytes (0%) of dynamic memory, leaving 2039 bytes for local variables. Maximum is 2048 bytes.
 ```
 
+### Ubuntu 22.04-based Linux Distros
+
+A quick note that if you're using an unofficial Arduino, you'll find that the device does not actually mount as it's supposed to. If you run `lsusb` you might see an entry for CH340 or CP210x USB drivers, but no device at `/dev/ttyACM0` or `/dev/ttyUSB0`. By default Ubuntu 22.04 and distributions based on it ship with a Braille reader software called `brltty` which is aggressive in claiming devices it thinks are Braille readers.
+
+In `dmesg`, you might see something like this as a symptom:
+```
+input: BRLTTY 6.4 Linux Screen Driver Keyboard as /devices/virtual/input/input31
+usb 1-8: usbfs: interface 0 claimed by ch341 while 'brltty' sets config #1
+ch341-uart ttyUSB0: ch341-uart converter now disconnected from ttyUSB0
+```
+
+If you are not blind and no one who is blind is using your computer, feel free to uninstall it: `sudo apt remove brltty`. If you want to keep the software on your system for one reason or another, try:
+```sh
+sudo systemctl stop brltty-udev.service
+sudo systemctl mask brltty-udev.service
+sudo systemctl stop brltty.service
+sudo systemctl disable brltty.service
+```
+
+Or if you use a Braille screen reader, you might just try editing the udev rules at `/usr/lib/udev/rules.d/85-brltty.rules`. For the CH340 (with USB VID and PID of `1a86:7523`), remove the corresponding entry:
+```
+# Device: 1A86:7523
+# Baum [NLS eReader Zoomax (20 cells)]
+ENV{PRODUCT}=="1a86/7523/*", ENV{BRLTTY_BRAILLE_DRIVER}="bm", GOTO="brltty_usb_run"
+```
+
 ## Python and pip
 
 Similarly, for installing `python3` and `pip`, there are great directions available. Here is a link to Python's [documentation for installation](https://wiki.python.org/moin/BeginnersGuide/Download) on various operating systems.
